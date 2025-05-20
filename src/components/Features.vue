@@ -42,10 +42,11 @@ const features = ref([])
 
 onMounted(async () => {
   try {
-    const response = await axios.get('/features.json') 
-    features.value = response.data.features 
+    const response = await axios.get(import.meta.env.BASE_URL + 'features.json')
+    features.value = response.data.features
   } catch (error) {
     console.error('Failed to fetch features:', error)
   }
 })
 </script>
+
