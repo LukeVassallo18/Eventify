@@ -173,7 +173,7 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div v-if="events.length >= itemsPerPage" class="flex flex-col items-center gap-2 mt-6">
+            <div v-if="events.length > 3" class="flex flex-col items-center gap-2 mt-6">
               <div class="text-sm text-gray-400">Page {{ currentPage }} of {{ totalPages }}</div>
               <div class="flex gap-4">
                 <button class="px-4 py-2 rounded bg-gray-700 text-white hover:bg-white hover:text-gray-900 transition duration-300 disabled:opacity-50" :disabled="currentPage === 1" @click="eventStore.currentPage--">
