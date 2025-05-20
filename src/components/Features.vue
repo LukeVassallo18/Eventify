@@ -9,16 +9,24 @@
       >
         <div class="relative z-10 flex flex-col items-center text-center space-y-5">
           <!-- Central icon circle -->
-          <div class="relative z-10 grid h-20 w-20 place-items-center rounded-full bg-indigo-500 transition-all duration-300 group-hover:bg-indigo-600">
+          <div
+            class="relative z-10 grid h-20 w-20 place-items-center rounded-full bg-indigo-500 transition-all duration-300 group-hover:bg-indigo-600"
+          >
             <i :class="feature.icon" class="text-white text-2xl"></i>
           </div>
 
           <!-- Hover pulse circle -->
-          <div class="absolute top-10 left-1/2 -translate-x-1/2 z-0 h-40 w-40 rounded-full bg-indigo-500 opacity-30 scale-0 group-hover:scale-[4] transition-transform duration-800"></div>
+          <div
+            class="absolute top-10 left-1/2 -translate-x-1/2 z-0 h-40 w-40 rounded-full bg-indigo-500 opacity-30 scale-0 group-hover:scale-[4] transition-transform duration-800"
+          ></div>
 
           <div class="space-y-2">
-            <h3 class="text-lg font-semibold text-gray-800 group-hover:text-indigo-700">{{ feature.title }}</h3>
-            <p class="text-gray-600 group-hover:text-gray-700 text-sm">{{ feature.description }}</p>
+            <h3 class="text-lg font-semibold text-gray-800 group-hover:text-indigo-700">
+              {{ feature.title }}
+            </h3>
+            <p class="text-gray-600 group-hover:text-gray-700 text-sm">
+              {{ feature.description }}
+            </p>
           </div>
         </div>
       </div>
@@ -34,11 +42,10 @@ const features = ref([])
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:3001/features')
-    features.value = response.data
+    const response = await axios.get('/features.json') 
+    features.value = response.data.features 
   } catch (error) {
     console.error('Failed to fetch features:', error)
   }
 })
-
 </script>
