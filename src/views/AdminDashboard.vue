@@ -131,7 +131,10 @@
             <div
               v-for="event in paginatedEvents"
               :key="event.id"
-              :class="['bg-gradient-to-br from-white to-indigo-50 border-l-4 border-indigo-500 p-5 rounded-lg shadow hover:shadow-md transition transform hover:scale-[1.01]', deletingEventId === event.id ? 'animate-pulse bg-indigo-200' : '']"
+              :class="[
+                'bg-gradient-to-br from-white to-indigo-50 border-l-4 border-indigo-500 p-5 rounded-lg shadow hover:shadow-md transition transform hover:scale-[1.01]',
+                (deletingEventId === event.id || animatingEventId === event.id) ? 'animate-pulse bg-indigo-200' : ''
+              ]"
             >
               <div class="flex justify-between items-start">
                 <div>
@@ -228,9 +231,26 @@ const { value: title, errorMessage: titleError, meta: titleMeta, handleBlur: tit
 const { value: date, errorMessage: dateError, meta: dateMeta, handleBlur: dateBlur } = useField('date')
 const { value: description, errorMessage: descriptionError, meta: descriptionMeta, handleBlur: descriptionBlur } = useField('description')
 
+const animatingEventId = ref(null)
+
 const submitEvent = handleSubmit(async (values) => {
-  await eventStore.createOrUpdateEvent(values, isEditing.value, editingEventId.value)
+  let affectedId = editingEventId.value
+  if (!isEditing.value) {
+    // Creating: get the new event's ID after creation
+    affectedId = await eventStore.createOrUpdateEvent(values, false, null)
+  } else {
+    await eventStore.createOrUpdateEvent(values, true, editingEventId.value)
+  }
   toast.success(isEditing.value ? 'Event updated successfully!' : 'Event created successfully!')
+
+  // Animate the affected event card
+  if (affectedId) {
+    animatingEventId.value = affectedId
+    setTimeout(() => {
+      animatingEventId.value = null
+    }, 3000)
+  }
+
   resetForm()
   isEditing.value = false
   editingEventId.value = null
@@ -248,6 +268,13 @@ const startEdit = (e) => {
   description.value = e.description
   isEditing.value = true
   editingEventId.value = e.id
+
+  // Animate the card being edited
+  animatingEventId.value = e.id
+  setTimeout(() => {
+    animatingEventId.value = null
+  }, 3000)
+
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
