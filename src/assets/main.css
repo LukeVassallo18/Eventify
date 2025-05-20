@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+body {
+  font-family: 'Patrick Hand', cursive;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  font-size: 0.875rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  color: #111827;
+}
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #6366f1;
+  border-color: #6366f1;
+}
+@media (prefers-color-scheme: dark) {
+  .input {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #fff;
+  }
+}
+
+/* Slide LEFT (forward navigation) */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: all 0.5s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.slide-left-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.slide-left-enter-to {
+  transform: translateX(0%);
+  opacity: 1;
+}
+.slide-left-leave-from {
+  transform: translateX(0%);
+  opacity: 1;
+}
+.slide-left-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* Slide RIGHT (backward navigation) */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.5s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.slide-right-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.slide-right-enter-to {
+  transform: translateX(0%);
+  opacity: 1;
+}
+.slide-right-leave-from {
+  transform: translateX(0%);
+  opacity: 1;
+}
+.slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
