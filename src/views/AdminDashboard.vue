@@ -193,7 +193,7 @@
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue' // <-- add nextTick
 import { useEventStore } from '@/stores/eventStore'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
@@ -238,6 +238,7 @@ const submitEvent = handleSubmit(async (values) => {
   if (!isEditing.value) {
     // Creating: get the new event's ID after creation
     affectedId = await eventStore.createOrUpdateEvent(values, false, null)
+    await nextTick() // Wait for DOM update after adding
   } else {
     await eventStore.createOrUpdateEvent(values, true, editingEventId.value)
   }
