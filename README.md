@@ -1,5 +1,7 @@
 # eventEase
 
+## Github Repo Link
+https://github.com/LukeVassallo18/Eventify
 
 ## Github Website Link
 ### Access this to go to the website
