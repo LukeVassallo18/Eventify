@@ -131,7 +131,11 @@
             <div
               v-for="event in paginatedEvents"
               :key="event.id"
-              :class="['bg-gradient-to-br from-white to-indigo-50 border-l-4 border-indigo-500 p-5 rounded-lg shadow hover:shadow-md transition transform hover:scale-[1.01]', deletingEventId === event.id ? 'animate-pulse bg-indigo-200' : '']"
+              :class="[
+                'bg-gradient-to-br from-white to-indigo-50 border-l-4 border-indigo-500 p-5 rounded-lg shadow hover:shadow-md transition transform hover:scale-[1.01]',
+                deletingEventId === event.id ? 'bg-indigo-200' : '',
+                justEditedId === event.id ? 'bg-green-100 border-green-500' : ''
+              ]"
             >
               <div class="flex justify-between items-start">
                 <div>
@@ -209,7 +213,7 @@ const deletingEventId = ref(null)
 
 const showGuestsModal = ref(false)
 const guestEvent = ref(null)
-
+const justEditedId = ref(null)
 const paginatedEvents = computed(() => eventStore.paginatedEvents)
 const currentPage = computed(() => eventStore.currentPage)
 const totalPages = computed(() => eventStore.totalPages)
@@ -231,10 +235,19 @@ const { value: description, errorMessage: descriptionError, meta: descriptionMet
 const submitEvent = handleSubmit(async (values) => {
   await eventStore.createOrUpdateEvent(values, isEditing.value, editingEventId.value)
   toast.success(isEditing.value ? 'Event updated successfully!' : 'Event created successfully!')
+
+  if (isEditing.value) {
+    justEditedId.value = editingEventId.value
+    setTimeout(() => {
+      justEditedId.value = null
+    }, 2000)
+  }
+
   resetForm()
   isEditing.value = false
   editingEventId.value = null
 })
+
 
 const cancelEdit = () => {
   resetForm()
@@ -358,6 +371,10 @@ textarea {
 
 button {
   font-size: 1rem;
+}
+
+.bg-green-100 {
+  transition: background-color 0.4s ease;
 }
 
 </style>
