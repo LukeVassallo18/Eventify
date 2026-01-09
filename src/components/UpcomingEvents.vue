@@ -52,15 +52,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
 import { useEventStore } from '@/stores/eventStore'
-import { useUserStore } from '@/stores/user'
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
-import { db } from '@/firebase'
+import { computed, onMounted, ref } from 'vue'
 
 // Stores
 const eventStore = useEventStore()
-const userStore = useUserStore()
 
 // Events
 const events = computed(() => eventStore.events)
@@ -69,8 +65,8 @@ const events = computed(() => eventStore.events)
 const showModal = ref(false)
 const selectedEvent = ref(null)
 
-// Get logged-in user email from store
-const userEmail = computed(() => userStore.email)
+// User email - get from localStorage or prompt
+const userEmail = ref(localStorage.getItem('rsvp_email') || '')
 
 // Open modal
 const openModal = (event) => {
@@ -85,26 +81,35 @@ const closeModal = () => {
 }
 
 // Check if user already RSVP'd
-const hasRSVPed = computed(() =>
-  selectedEvent.value?.guests?.includes(userEmail.value)
-)
+const hasRSVPed = computed(() => {
+  if (!userEmail.value) return false
+  return selectedEvent.value?.guests?.includes(userEmail.value)
+})
 
 // RSVP logic
-const rsvp = async () => {
-  if (!selectedEvent.value || !userEmail.value) {
-    alert('You must be logged in to RSVP.')
-    return
+const rsvp = () => {
+  if (!selectedEvent.value) return
+
+  let email = userEmail.value
+  if (!email) {
+    email = prompt('Please enter your email to RSVP:')
+    if (!email) return
+    userEmail.value = email
+    localStorage.setItem('rsvp_email', email)
   }
 
-  const eventRef = doc(db, 'events', selectedEvent.value.id)
-  await updateDoc(eventRef, {
-    guests: arrayUnion(userEmail.value)
-  })
-
-  await eventStore.fetchEvents()
-
-  const updated = eventStore.events.find(e => e.id === selectedEvent.value.id)
-  selectedEvent.value = { ...updated }
+  const eventIndex = eventStore.events.findIndex(e => e.id === selectedEvent.value.id)
+  if (eventIndex !== -1) {
+    if (!eventStore.events[eventIndex].guests) {
+      eventStore.events[eventIndex].guests = []
+    }
+    if (!eventStore.events[eventIndex].guests.includes(email)) {
+      eventStore.events[eventIndex].guests.push(email)
+      const STORAGE_KEY = 'eventify_events'
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(eventStore.events))
+      selectedEvent.value = { ...eventStore.events[eventIndex] }
+    }
+  }
 }
 
 const filteredGuests = computed(() =>

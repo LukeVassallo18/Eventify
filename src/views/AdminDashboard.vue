@@ -193,13 +193,11 @@
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
-import { ref, computed, onMounted, nextTick } from 'vue' // <-- add nextTick
 import { useEventStore } from '@/stores/eventStore'
-import { useForm, useField } from 'vee-validate'
-import * as yup from 'yup'
+import { useField, useForm } from 'vee-validate'
+import { computed, onMounted, ref } from 'vue'; // <-- add nextTick
 import { useToast } from 'vue-toastification'
-import { doc, updateDoc, arrayRemove } from 'firebase/firestore'
-import { db } from '@/firebase'
+import * as yup from 'yup'
 
 const eventStore = useEventStore()
 const toast = useToast()
@@ -233,18 +231,12 @@ const { value: description, errorMessage: descriptionError, meta: descriptionMet
 
 const animatingEventId = ref(null)
 
-const submitEvent = handleSubmit(async (values) => {
-  let affectedId = editingEventId.value
-  if (!isEditing.value) {
-    // Creating: get the new event's ID after creation
-    affectedId = await eventStore.createOrUpdateEvent(values, false, null)
-    await nextTick() // Wait for DOM update after adding
-  } else {
-    await eventStore.createOrUpdateEvent(values, true, editingEventId.value)
-  }
+const submitEvent = handleSubmit((values) => {
+  eventStore.createOrUpdateEvent(values, isEditing.value, editingEventId.value)
   toast.success(isEditing.value ? 'Event updated successfully!' : 'Event created successfully!')
 
   // Animate the affected event card
+  const affectedId = isEditing.value ? editingEventId.value : eventStore.events[0]?.id
   if (affectedId) {
     animatingEventId.value = affectedId
     setTimeout(() => {
@@ -289,12 +281,12 @@ const cancelDelete = () => {
   showModal.value = false
 }
 
-const confirmDelete = async () => {
+const confirmDelete = () => {
   showModal.value = false
   deletingEventId.value = selectedEvent.value.id
   toast.success('Event deleted successfully!')
-  setTimeout(async () => {
-    await eventStore.deleteEvent(selectedEvent.value.id)
+  setTimeout(() => {
+    eventStore.deleteEvent(selectedEvent.value.id)
     selectedEvent.value = null
     deletingEventId.value = null
   }, 3000)
@@ -317,23 +309,22 @@ const filteredGuests = computed(() =>
   )
 )
 
-const removeGuest = async (email) => {
+const removeGuest = (email) => {
   if (!guestEvent.value) return
 
-  const eventRef = doc(db, 'events', guestEvent.value.id)
-  await updateDoc(eventRef, {
-    guests: arrayRemove(email)
-  })
-
-  await eventStore.fetchEvents()
-
-  const updated = eventStore.events.find(e => e.id === guestEvent.value.id)
-  guestEvent.value = JSON.parse(JSON.stringify(updated))
-
-  toast.success(`Guest "${email}" has been removed.`)
+  const eventIndex = eventStore.events.findIndex(e => e.id === guestEvent.value.id)
+  if (eventIndex !== -1) {
+    eventStore.events[eventIndex].guests = (eventStore.events[eventIndex].guests || []).filter(g => g !== email)
+    const STORAGE_KEY = 'eventify_events'
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(eventStore.events))
+    guestEvent.value = JSON.parse(JSON.stringify(eventStore.events[eventIndex]))
+    toast.success(`Guest "${email}" has been removed.`)
+  }
 }
 
-onMounted(eventStore.fetchEvents)
+onMounted(() => {
+  eventStore.fetchEvents()
+})
 </script>
 
 <style scoped>

@@ -1,59 +1,67 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { db } from '@/firebase'
-import {
-  collection,
-  getDocs,
-  setDoc,
-  deleteDoc,
-  doc,
-  addDoc,
-  query,
-  orderBy
-} from 'firebase/firestore'
+import { computed, ref } from "vue";
 
-export const useEventStore = defineStore('event', () => {
-  const events = ref([])
-  const currentPage = ref(1)
-  const itemsPerPage = 3
+const STORAGE_KEY = "eventify_events";
 
-  const totalPages = computed(() => Math.ceil(events.value.length / itemsPerPage))
+export const useEventStore = defineStore("event", () => {
+  const events = ref([]);
+  const currentPage = ref(1);
+  const itemsPerPage = 3;
+
+  const totalPages = computed(() =>
+    Math.ceil(events.value.length / itemsPerPage)
+  );
   const paginatedEvents = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage
-    return events.value.slice(start, start + itemsPerPage)
-  })
+    const start = (currentPage.value - 1) * itemsPerPage;
+    return events.value.slice(start, start + itemsPerPage);
+  });
 
-  const fetchEvents = async () => {
+  const fetchEvents = () => {
     try {
-      const q = query(collection(db, 'events'), orderBy('date', 'desc'))
-      const snapshot = await getDocs(q)
-      events.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        events.value = JSON.parse(stored).sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+      }
     } catch (err) {
-      console.error('Fetch events error:', err)
+      console.error("Fetch events error:", err);
+      events.value = [];
     }
-  }
+  };
 
-  const createOrUpdateEvent = async (eventData, isEditing, editingId) => {
+  const saveEvents = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events.value));
+  };
+
+  const createOrUpdateEvent = (eventData, isEditing, editingId) => {
     try {
       if (isEditing) {
-        await setDoc(doc(db, 'events', editingId), { ...eventData })
+        const index = events.value.findIndex((e) => e.id === editingId);
+        if (index !== -1) {
+          events.value[index] = { ...events.value[index], ...eventData };
+        }
       } else {
-        await addDoc(collection(db, 'events'), { ...eventData }) // ← auto-generated ID
+        const newEvent = {
+          id: Date.now().toString(),
+          ...eventData,
+        };
+        events.value.unshift(newEvent);
       }
-      await fetchEvents()
+      saveEvents();
     } catch (err) {
-      console.error('Create/Update event error:', err)
+      console.error("Create/Update event error:", err);
     }
-  }
+  };
 
-  const deleteEvent = async (eventId) => {
+  const deleteEvent = (eventId) => {
     try {
-      await deleteDoc(doc(db, 'events', eventId))
-      await fetchEvents()
+      events.value = events.value.filter((e) => e.id !== eventId);
+      saveEvents();
     } catch (err) {
-      console.error('Delete event error:', err)
+      console.error("Delete event error:", err);
     }
-  }
+  };
 
   return {
     events,
@@ -64,5 +72,5 @@ export const useEventStore = defineStore('event', () => {
     fetchEvents,
     createOrUpdateEvent,
     deleteEvent,
-  }
-})
+  };
+});

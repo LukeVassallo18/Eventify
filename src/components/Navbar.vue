@@ -1,22 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import Button from 'primevue/button'
-import { useUserStore } from '@/stores/user'
+import { ref } from 'vue';
 
 const menuOpen = ref(false)
-const router = useRouter()
-
-const userStore = useUserStore()
-const isAdmin = computed(() => userStore.role === 'admin')
-const profilePicture = computed(() => userStore.profilePicture)
-const userEmail = computed(() => userStore.email)
-
-const logout = () => {
-  userStore.clearUser()
-  localStorage.removeItem('user')
-  router.push('/createAcc')
-}
 </script>
 
 <template>
@@ -36,33 +21,19 @@ const logout = () => {
         <span class="absolute left-0 -bottom-1 w-full h-0.5 bg-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
       </router-link>
       <router-link
-        v-if="isAdmin"
+        to="/events"
+        class="hover:text-indigo-600 transition duration-200 relative group"
+      >
+        Events
+        <span class="absolute left-0 -bottom-1 w-full h-0.5 bg-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+      </router-link>
+      <router-link
         to="/admin"
         class="text-red-600 hover:text-red-700 font-medium relative group"
       >
         Admin Privileges
         <span class="absolute left-0 -bottom-1 w-full h-0.5 bg-red-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
       </router-link>
-
-      <Button
-        label="Log Out"
-        @click="logout"
-        class="p-button-sm p-button-text p-button-secondary text-lg transition hover:scale-105"
-      />
-
-      <!-- Profile Picture with Tooltip (Desktop Only) -->
-      <div v-if="profilePicture" class="relative group ml-2">
-        <img
-          :src="profilePicture"
-          alt="Profile"
-          class="w-10 h-10 rounded-full object-cover border-2 border-indigo-500"
-        />
-        <span
-          class="absolute top-full left-1/3 transform -translate-x-2/3 mt-2 px-3 py-2 text-sm text-white bg-black rounded-lg opacity-0 group-hover:opacity-100 transition shadow-lg"
-        >
-          {{ userEmail }}
-        </span>
-      </div>
     </div>
 
     <!-- Burger Menu Button -->
@@ -90,14 +61,20 @@ const logout = () => {
         </router-link>
 
         <router-link
-          v-if="isAdmin"
+          to="/events"
+          class="text-gray-800 hover:text-indigo-600 transition duration-200 relative group"
+        >
+          Events
+          <span class="absolute left-0 -bottom-1 w-full h-0.5 bg-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+        </router-link>
+
+        <router-link
           to="/admin"
           class="text-red-600 hover:text-red-700 font-medium relative group"
         >
           Admin Privileges
           <span class="absolute left-0 -bottom-1 w-full h-0.5 bg-red-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
         </router-link>
-        <Button label="Log Out" @click="logout" class="p-button-sm p-button-text p-button-secondary text-lg" />
       </div>
     </transition>
   </div>

@@ -5,15 +5,4 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-
-const userStore = useUserStore()
-
-onMounted(() => {
-  const userData = localStorage.getItem('user')
-  if (userData) {
-    userStore.setUser(JSON.parse(userData))
-  }
-})
 </script>
